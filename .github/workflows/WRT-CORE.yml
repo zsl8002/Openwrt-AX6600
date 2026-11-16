@@ -108,7 +108,7 @@ jobs:
           esac
           echo "WRT_PROFILE=$WRT_PROFILE_UPPER" >> $GITHUB_ENV
           if [[ "$WRT_PROFILE_UPPER" == "PLUS" ]]; then
-            echo "WRT_PROFILE_DESC=Plus 版，预装 OpenClash、PassWall2、Docker/Dockerman、AdGuard Home、DDNS、ttyd、UPnP 及分区扩容、网络唤醒等实用插件，刷完即用；启用 AdGuard Home 与代理插件前请先阅读 README 的「PLUS 版使用提示」" >> $GITHUB_ENV
+            echo "WRT_PROFILE_DESC=Plus 版，预装 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd、UPnP 及分区扩容、网络唤醒等实用插件；启用 AdGuard Home 与代理服务前请先阅读 README 的「PLUS 版使用提示」" >> $GITHUB_ENV
           else
             echo "WRT_PROFILE_DESC=纯净版，轻量稳定，仅含基础网络与常用管理插件，扩展插件按需自行安装" >> $GITHUB_ENV
           fi
@@ -298,7 +298,7 @@ jobs:
           # 5. PLUS 核心插件入选断言 (当 WRT_PROFILE 为 PLUS 时)
           if [[ "${WRT_PROFILE_UPPER:-${WRT_PROFILE}}" == "PLUS" ]]; then
             echo "--- 检查 PLUS 核心插件意图一致性 ---"
-            for PKG in luci-app-passwall2 luci-app-openclash luci-app-dockerman luci-app-adguardhome luci-app-wolultra; do
+            for PKG in luci-app-passwall2 luci-app-adguardhome luci-app-wolultra luci-theme-argon;
               PKG_INTENT="CONFIG_PACKAGE_${PKG}=y"
               if [[ -f .config.seed ]]; then
                 PKG_INTENT=$(grep -E "^(#\s*)?CONFIG_PACKAGE_${PKG}(=|[[:space:]])" .config.seed | tail -n 1 || true)
@@ -317,7 +317,19 @@ jobs:
             done
           fi
 
-          # 6. Qualcomm PPE 时钟驱动补丁生效断言
+          # 6. 禁止重新引入已移除的 OpenClash / Docker 组件，并确保 Argon 主题入选
+          for PKG in luci-app-openclash luci-app-dockerman dockerd docker docker-compose tini kmod-veth; do
+            if grep -q "^CONFIG_PACKAGE_${PKG}=y" .config; then
+              echo "::error::断言失败: 已移除组件 CONFIG_PACKAGE_${PKG} 被重新启用！"
+              FAIL=1
+            fi
+          done
+          if ! grep -q "^CONFIG_PACKAGE_luci-theme-argon=y" .config; then
+            echo "::error::断言失败: luci-theme-argon 未实际入选！"
+            FAIL=1
+          fi
+
+          # 7. Qualcomm PPE 时钟驱动补丁生效断言
           PPE_DRIVER="target/linux/qualcommax/files/drivers/net/ethernet/qualcomm/qca_ppe_main.c"
           IPQ6018_PATCH="target/linux/qualcommax/patches-6.18/0918-clk-qcom-gcc-ipq6018-keep-port-5-on-uniphy1-at-SGMII-rates.patch"
           IPQ8074_CONFLICT="target/linux/qualcommax/patches-6.18/0919-clk-qcom-gcc-ipq8074-keep-port-5-on-uniphy1-at-SGMII-rates.patch"
