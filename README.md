@@ -34,7 +34,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 | 版本 | 下载入口 | 适合场景 |
 |------|----------|----------|
 | 🍃 `PURE` 纯净版 | 🎯 **[👉 下载最新 PURE 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PURE&expanded=true)** | 轻量稳定，日常推荐，插件按需自装 |
-| 🚀 `PLUS` 版 | 🎯 **[👉 下载最新 PLUS 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PLUS&expanded=true)** | OpenClash / PassWall2 / Docker / AdGuard Home 开箱即用 |
+| 🚀 `PLUS` 版 | 🎯 **[👉 下载最新 PLUS 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PLUS&expanded=true)** | PassWall2 / Argon 主题 / AdGuard Home 开箱即用 |
 
 > ⭐ 固件对你有用的话，顺手点个 Star —— 这是对持续维护最好的支持！
 
@@ -85,7 +85,7 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 > ### 架构升级与系统升级注意事项
 > 本次迁移全面切换至 **Qualcomm PPE 开源硬件加速** 架构，并修正了 LuCI 防火墙管理界面包名（启用内嵌于 firewall4 的 SONiC FullCone NAT1）。
 > - **目标分区红线**：本次 PLUS 升级包约 160MB，升级前必须核实目标系统分区（`rootfs`）已扩容（大于 200MB，原厂 60MB 分区绝对不能刷入 PLUS 版，不能以整机 eMMC 存储容量误判）。
-> - **Docker 数据保护**：`sysupgrade` 默认会重置内部 Flash 的 overlay 分区，**保留配置不等于保留整个 overlay**！
+> - **用户数据保护**：`sysupgrade` 默认会重置内部 Flash 的 overlay 分区，**保留配置不等于保留整个 overlay**！重要数据请提前备份至外部存储。
 > - **平滑保留配置升级**：可保留现有网络、Wi-Fi、DHCP、防火墙与用户规则，升级后仅需精准清理失效的 NSS 专用节（如 `firewall.qcanssecm`），无需为了启用 PPE 而覆盖整份旧防火墙配置。
 > - **跨架构新手建议**：若旧版系统配置过度杂乱或曾做过重度魔改，建议导出备份后选择不保留配置升级（`sysupgrade -n 固件文件名.bin`），待进入系统确认正常后再导入配置。
 
@@ -193,7 +193,7 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 ### 版本与验证建议
 
 - `PURE`：推荐作为日常稳定版，保持当前轻量配置。
-- `PLUS`：Plus 版会额外集成 OpenClash、PassWall2、Docker / Dockerman、AdGuard Home、DDNS、ttyd、UPnP 等，固件体积和运行资源占用都会明显高于纯净版。
+- `PLUS`：Plus 版会额外集成 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd、UPnP 等，固件体积和运行资源占用都会高于纯净版。
 - 手动测试时可在 `WRT-TEST` 工作流选择 `PROFILE=PURE` 或 `PROFILE=PLUS`；建议 Plus 版发布前至少先用 `TEST=true` 生成最终 `.config`，再用完整编译确认上游插件依赖没有变化。
 - Release 会额外上传 `Packages-*.txt` 记录外部插件仓库和 commit，方便排查 PassWall2 / Argon 上游变更导致的编译问题。
 
@@ -202,7 +202,7 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 ### PLUS 版使用提示
 
 - **AdGuard Home 首次启用**：出厂默认关闭。启用服务后访问 `http://路由器IP:3000` 完成安装向导，向导中 **DNS 监听端口请填 `5553`**（`53` 已被系统 dnsmasq 占用，填 53 会报错）；完成后在 LuCI「网络 → DHCP/DNS」的「DNS 转发」中填入 `127.0.0.1#5553` 并勾选「忽略解析文件」，广告过滤即对全局生效。
-- **代理服务**：当前固件仅集成 PassWall2，不再集成 OpenClash，避免双代理服务争抢 DNS 与透明代理规则。
+- **代理服务**：PLUS 版集成 PassWall2，PURE 版保持精简，不预装代理管理插件。
 
 
 ## 📂 项目结构
