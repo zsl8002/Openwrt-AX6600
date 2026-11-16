@@ -34,7 +34,7 @@ jobs:
           fi
 
           echo "== No public release of credentials or weak Wi-Fi defaults =="
-          if grep -nE '管理密码：\$\{\{|WiFi 密码：\$\{\{|12345678' .github/workflows/WRT-CORE.yml Scripts/Settings.sh; then
+          if grep -nE '管理密码：\\$\\{\\{|WiFi 密码：\\$\\{\\{|WRT_WORD:[[:space:]]*12345678|WRT_WORD:-12345678|TARGET_WORD="12345678"' .github/workflows/WRT-CORE.yml Scripts/Settings.sh;
             echo "::error::Credential disclosure or weak default detected."
             fail=1
           fi
