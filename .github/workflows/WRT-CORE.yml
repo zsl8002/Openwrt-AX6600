@@ -515,10 +515,10 @@ jobs:
             fi
 
             mapfile -d '' FIRMWARE_FILES < <(
-              find ./upload/ -maxdepth 1 -type f \\
-                \\( -iname '*.bin' -o -iname '*.img' -o -iname '*.img.gz' \\
-                   -o -iname '*.bin.gz' -o -iname '*.ubi' -o -iname '*.ubi.gz' \\
-                   -o -iname '*.itb' -o -iname '*.fit' -o -iname '*.trx' \\) -print0
+              find ./upload/ -maxdepth 1 -type f \
+                \( -iname '*.bin' -o -iname '*.img' -o -iname '*.img.gz' \
+                   -o -iname '*.bin.gz' -o -iname '*.ubi' -o -iname '*.ubi.gz' \
+                   -o -iname '*.itb' -o -iname '*.fit' -o -iname '*.trx' \) -print0
             )
             if (( ${#FIRMWARE_FILES[@]} > 0 )); then
               (cd ./upload/ && sha256sum "${FIRMWARE_FILES[@]##*/}" > sha256sums.txt)
