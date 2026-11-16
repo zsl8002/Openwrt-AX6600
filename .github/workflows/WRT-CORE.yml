@@ -298,7 +298,7 @@ jobs:
           # 5. PLUS 核心插件入选断言 (当 WRT_PROFILE 为 PLUS 时)
           if [[ "${WRT_PROFILE_UPPER:-${WRT_PROFILE}}" == "PLUS" ]]; then
             echo "--- 检查 PLUS 核心插件意图一致性 ---"
-            for PKG in luci-app-passwall2 luci-app-adguardhome luci-app-wolultra luci-theme-argon;
+            for PKG in luci-app-passwall2 luci-app-adguardhome luci-app-wolultra luci-theme-argon; do
               PKG_INTENT="CONFIG_PACKAGE_${PKG}=y"
               if [[ -f .config.seed ]]; then
                 PKG_INTENT=$(grep -E "^(#\s*)?CONFIG_PACKAGE_${PKG}(=|[[:space:]])" .config.seed | tail -n 1 || true)
@@ -530,7 +530,7 @@ jobs:
             - 已是 OpenWrt/ImmortalWrt 升级：选文件名带 sysupgrade 的文件
             - 刷机 / 救砖完整教程：[刷机救砖教程](${{ github.server_url }}/${{ github.repository }}/blob/main/Docs/刷机救砖教程.md)
             - Config-*.txt：本次编译的完整 .config 配置，便于复现或二次定制
-            - Packages-*.txt：外部插件（OpenClash / PassWall2 等）的仓库、分支与 commit 记录（纯净版无外部插件，无此文件）
+            - Packages-*.txt：外部插件（PassWall2、Argon 主题等）的仓库与 commit 记录（纯净版无外部插件，无此文件）
             - sha256sums.txt：固件校验文件，刷机前请先校验下载完整性（方法见 README 刷机前必读）
 
             ⚠️ 风险提示
