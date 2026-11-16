@@ -66,7 +66,7 @@ UPDATE_PACKAGE() {
 
 # UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
 # Argon LuCI 主题：PURE / PLUS 均集成，固定上游已审查 commit。
-UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "4b8b7849551c558ec905c40b0ebb864641c9fa32" "pkg"
+UPDATE_PACKAGE "luci-theme-argon" "sbwml/luci-theme-argon" "4b8b7849551c558ec905c40b0ebb864641c9fa32" "pkg"
 #UPDATE_PACKAGE "aurora" "ones20250/luci-theme-aurora" "master"
 #UPDATE_PACKAGE "aurora-config" "ones20250/luci-app-aurora-config" "master"
 #UPDATE_PACKAGE "kucat" "sirpdboy/luci-theme-kucat" "master"
