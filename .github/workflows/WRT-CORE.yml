@@ -120,12 +120,38 @@ jobs:
           echo "WRT_KVER=none" >> $GITHUB_ENV
           echo "WRT_LIST=none" >> $GITHUB_ENV
 
+      - name: Validate Stable Source Pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Only the reviewed, successfully built AX6600 stable source snapshot is allowed.
+          STABLE_SOURCE="ones20250/immortalwrt_ipq"
+          STABLE_COMMIT="ff74343745c7ba238f959372aca5a182d2eafb8f"
+          if [[ "$WRT_SOURCE" != "$STABLE_SOURCE" ]]; then
+            echo "::error::Unapproved source repository: $WRT_SOURCE"
+            exit 1
+          fi
+          if [[ "$WRT_BRANCH" != "$STABLE_COMMIT" ]]; then
+            echo "::error::Only the approved stable commit $STABLE_COMMIT is allowed; got: $WRT_BRANCH"
+            exit 1
+          fi
+          if [[ ! "$WRT_BRANCH" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Source must be pinned to a full 40-character commit SHA; branches/tags/SNAPSHOT are forbidden."
+            exit 1
+          fi
+
       - name: Clone Code
         run: |
+          set -euo pipefail
           git init ./wrt
           git -C ./wrt remote add origin "$WRT_REPO"
           git -C ./wrt fetch --depth=1 origin "$WRT_BRANCH"
           git -C ./wrt checkout --detach FETCH_HEAD
+          ACTUAL_SOURCE_COMMIT=$(git -C ./wrt rev-parse HEAD)
+          if [[ "$ACTUAL_SOURCE_COMMIT" != "$WRT_BRANCH" ]]; then
+            echo "::error::Fetched source commit mismatch: expected $WRT_BRANCH, got $ACTUAL_SOURCE_COMMIT"
+            exit 1
+          fi
 
           cd ./wrt/ && echo "WRT_HASH=$(git log -1 --pretty=format:'%h')" >> $GITHUB_ENV
 
@@ -474,7 +500,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Release Firmware
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.WRT_CONFIG }}-${{ env.WRT_PROFILE }}-${{ env.WRT_INFO }}-${{ env.WRT_BRANCH }}-${{ env.WRT_DATE }}
           files: ./wrt/upload/*.*
