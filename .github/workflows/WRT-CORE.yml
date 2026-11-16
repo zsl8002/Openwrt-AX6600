@@ -278,26 +278,31 @@ jobs:
 
           cp .config .config.seed
 
-          # The pinned source gates the VERSIONOPT prompt with IMAGEOPT, but
-          # IMAGEOPT is not defined in this source tree. Kconfig therefore hides
-          # VERSIONOPT and silently drops CONFIG_VERSION_NUMBER during defconfig.
-          # Expose only the release-metadata menu so the explicit stable version
-          # in GENERAL_AX6600.txt survives normal Kconfig resolution.
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("package/base-files/image-config.in")
-          s = p.read_text()
-          old = 'menuconfig VERSIONOPT\\n\\tbool "Version configuration options" if IMAGEOPT'
-          new = 'menuconfig VERSIONOPT\\n\\tbool "Version configuration options"'
-          if old not in s:
-              raise SystemExit("Expected VERSIONOPT/IMAGEOPT Kconfig gate not found; refusing an unverified build")
-          p.write_text(s.replace(old, new, 1))
-          PY
+          # The pinned source hides VERSIONOPT behind IMAGEOPT, which is not
+          # defined in this source tree. Remove that prompt-only gate so Kconfig
+          # can retain the explicit stable release metadata from GENERAL_AX6600.txt.
+          sed -i 's/bool "Version configuration options" if IMAGEOPT/bool "Version configuration options"/' package/base-files/image-config.in
+          if grep -q 'bool "Version configuration options" if IMAGEOPT' package/base-files/image-config.in; then
+            echo "::error::Could not expose VERSIONOPT in the pinned source Kconfig."
+            exit 1
+          fi
 
           make defconfig -j$(nproc)
 
           # Verify Kconfig retained the release metadata before any build work.
-          if ! grep -q '^CONFIG_VERSIONOPT=y          # version resolves to SNAPSHOT or an unversioned development build.
+          if ! grep -q '^CONFIG_VERSIONOPT=y$' .config; then
+            echo "::error::VERSIONOPT was not retained after defconfig; refusing to build."
+            exit 1
+          fi
+          if ! grep -q '^CONFIG_VERSION_NUMBER="25.12.2"$' .config; then
+            echo "::error::Stable version 25.12.2 was not retained after defconfig; refusing to build."
+            grep -E '^CONFIG_VERSION_(OPT|NUMBER)' .config || true
+            exit 1
+          fi
+
+          make clean -j$(nproc)
+
+          # Fail closed: never publish firmware whose actual OpenWrt/ImmortalWrt
           VERSION_NUMBER=$(awk -F'"' '/^CONFIG_VERSION_NUMBER="/ { print $2; exit }' .config)
           if [[ -z "$VERSION_NUMBER" || "$VERSION_NUMBER" =~ [Ss][Nn][Aa][Pp][Ss][Hh][Oo][Tt] ]]; then
             echo "::error::Stable release required; CONFIG_VERSION_NUMBER is empty or SNAPSHOT ('$VERSION_NUMBER'). Refusing to build/publish development firmware."
