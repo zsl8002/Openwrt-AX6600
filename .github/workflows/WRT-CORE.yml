@@ -72,7 +72,7 @@ jobs:
       cache_started: ${{steps.initialize-cache.outputs.cache_started}}
     steps:
       - name: Checkout Projects
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           persist-credentials: false
 
@@ -175,7 +175,7 @@ jobs:
       - name: Restore Build Cache
         id: check-cache
         if: env.WRT_TEST != 'true'
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5
         with:
           # 缓存内容（ccache/宿主工具/工具链）与 profile 无关，PURE 和 PLUS 共享同一份，避免缓存翻倍挤占配额
           key: ${{env.WRT_CACHE_KEY}}
@@ -393,7 +393,7 @@ jobs:
       - name: Upload Build Reports
         if: env.WRT_TEST != 'true' && always()
         continue-on-error: true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: build-reports-${{env.WRT_CONFIG}}-${{env.WRT_PROFILE}}-${{env.WRT_INFO}}-${{github.run_attempt}}
           path: ./build-reports/
@@ -401,7 +401,7 @@ jobs:
 
       - name: Save Build Cache
         if: env.WRT_TEST != 'true' && success() && steps.check-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb # v5
         with:
           key: ${{env.WRT_CACHE_KEY}}
           path: |
