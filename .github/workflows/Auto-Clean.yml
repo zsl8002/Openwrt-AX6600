@@ -1,26 +1,22 @@
 name: Auto-Clean
 
 on:
-  #自动清理：每天早上6点
-  #schedule:
-   # - cron: 0 22 * * *
-  #手动清理
+  # 保留历史固件 Release、标签和工作流记录，避免清理任务误删审计证据。
+  # 如确需清理，请在 GitHub 页面人工选择目标并确认后执行。
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
+  actions: read
 
 jobs:
-  auto_clean:
+  safe-retention:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete old Releases and Workflows
-        uses: ophub/delete-releases-workflows@main
-        with:
-          gh_token: ${{secrets.GITHUB_TOKEN}}
-          delete_releases: true
-          releases_keep_latest: 100
-          delete_tags: true
-          delete_workflows: true
-          workflows_keep_day: 0
+      - name: Explain retention policy
+        run: |
+          {
+            echo "## Automatic cleanup is disabled"
+            echo "Release assets, tags, and workflow run history are retained for traceability."
+            echo "No releases, tags, caches, or workflow runs were deleted."
+          } >> "$GITHUB_STEP_SUMMARY"
