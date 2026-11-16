@@ -298,12 +298,20 @@ jobs:
             exit 1
           fi
 
-          # The pinned vendor feed snapshot contains several unrelated packages
-          # with known recursive Kconfig dependencies. Remove only their feed
-          # symlinks when none of those packages was requested in this firmware.
-          # Keep the feed repositories and every explicitly selected package.
-          if ! grep -Eq '^CONFIG_PACKAGE_qt5base-[^=]+=y
-
+          # The pinned vendor feed snapshot contains unrelated packages with recursive Kconfig dependencies.
+          # Remove only unselected package links; keep feeds and all requested packages intact.
+          if ! grep -q '^CONFIG_PACKAGE_qt5base-' .config; then
+            rm -f package/feeds/video/qt5base
+          fi
+          if ! grep -q '^CONFIG_PACKAGE_qt6base-' .config; then
+            rm -f package/feeds/video/qt6quick package/feeds/video/qt6svg
+          fi
+          if ! grep -q '^CONFIG_PACKAGE_fwknopd=y' .config && ! grep -q '^CONFIG_PACKAGE_luci-app-fwknopd=y' .config; then
+            rm -f package/feeds/packages/fwknop package/feeds/luci/luci-app-fwknopd package/feeds/packages/luci-app-fwknopd
+          fi
+          if ! grep -q '^CONFIG_PACKAGE_squeezelite-custom=y' .config; then
+            rm -f package/feeds/*/squeezelite-custom
+          fi
           # Verify Kconfig retained the release metadata before any build work.
           if ! grep -q '^CONFIG_VERSIONOPT=y$' .config; then
             echo "::error::VERSIONOPT was not retained after defconfig; refusing to build."
