@@ -65,7 +65,8 @@ UPDATE_PACKAGE() {
 # UPDATE_PACKAGE "open-app-filter" "destan19/OpenAppFilter" "master" "" "luci-app-appfilter oaf" 这样会把原有的open-app-filter，luci-app-appfilter，oaf相关组件删除，不会出现coremark错误。
 
 # UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
-#UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "openwrt-25.12"
+# Argon LuCI 主题：PURE / PLUS 均集成，固定上游已审查 commit。
+UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "4b8b7849551c558ec905c40b0ebb864641c9fa32" "pkg"
 #UPDATE_PACKAGE "aurora" "ones20250/luci-theme-aurora" "master"
 #UPDATE_PACKAGE "aurora-config" "ones20250/luci-app-aurora-config" "master"
 #UPDATE_PACKAGE "kucat" "sirpdboy/luci-theme-kucat" "master"
@@ -75,9 +76,6 @@ UPDATE_PACKAGE() {
 #UPDATE_PACKAGE "momo" "nikkinikki-org/OpenWrt-momo" "main"
 #UPDATE_PACKAGE "nikki" "nikkinikki-org/OpenWrt-nikki" "main"
 if [[ "${WRT_PROFILE^^}" == "PLUS" ]]; then
-	# LuCI 入口随 "pkg" 通配一并提取，依赖包（xray、sing-box、geodata 等）
-	# 由 passwall_packages feed 提供，避免同名包双重定义。
-	UPDATE_PACKAGE "openclash" "vernesong/OpenClash" "e553e82e01c697aefbe1555261a503f425e00ccd" "pkg"
 	#一代 PassWall 已由 PassWall2 取代，fork 者如需可取消注释，并同步启用 Config/GENERAL_AX6600_PLUS.txt 中对应配置段
 	#UPDATE_PACKAGE "passwall" "Openwrt-Passwall/openwrt-passwall" "main" "pkg"
 	UPDATE_PACKAGE "passwall2" "Openwrt-Passwall/openwrt-passwall2" "9ea760ffdee3fd8735df6a5bee842b3dd654be86" "pkg"
