@@ -283,12 +283,12 @@ jobs:
 
           # Fail closed: never publish firmware whose actual OpenWrt/ImmortalWrt
           # version resolves to SNAPSHOT or an unversioned development build.
-          VERSION_NUMBER=$(sed -n 's/^CONFIG_VERSION_NUMBER="\\([^"]*\\)"/\\1/p' .config | head -n 1)
+          VERSION_NUMBER=$(awk -F'"' '/^CONFIG_VERSION_NUMBER="/ { print $2; exit }' .config)
           if [[ -z "$VERSION_NUMBER" || "$VERSION_NUMBER" =~ [Ss][Nn][Aa][Pp][Ss][Hh][Oo][Tt] ]]; then
             echo "::error::Stable release required; CONFIG_VERSION_NUMBER is empty or SNAPSHOT ('$VERSION_NUMBER'). Refusing to build/publish development firmware."
             exit 1
           fi
-          if [[ ! "$VERSION_NUMBER" =~ ^[0-9]+\\.[0-9]+(\\.[0-9]+)?$ ]]; then
+          if [[ ! "$VERSION_NUMBER" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "::error::Unrecognized stable release version '$VERSION_NUMBER'. Expected a numeric release such as 25.12.2."
             exit 1
           fi
