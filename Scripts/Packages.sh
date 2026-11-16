@@ -78,8 +78,9 @@ UPDATE_PACKAGE() {
 # UPDATE_PACKAGE "open-app-filter" "destan19/OpenAppFilter" "master" "" "luci-app-appfilter oaf" 这样会把原有的open-app-filter，luci-app-appfilter，oaf相关组件删除，不会出现coremark错误。
 
 # UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
-# Argon LuCI 主题：PURE / PLUS 均集成，固定上游已审查 commit。
-UPDATE_PACKAGE "luci-theme-argon" "sbwml/luci-theme-argon" "4b8b7849551c558ec905c40b0ebb864641c9fa32" "pkg"
+# Argon LuCI 主题：直接使用固定 ImmortalWrt 源码快照自带的 luci-theme-argon feed 包。
+# Update Feeds 已安装 luci-theme-argon；不要再删除 feed 目录并重复克隆到 package/，
+# 否则 feed 安装索引与本地包目录状态不一致，make defconfig 可能将其从 .config 中剔除。
 #UPDATE_PACKAGE "aurora" "ones20250/luci-theme-aurora" "master"
 #UPDATE_PACKAGE "aurora-config" "ones20250/luci-app-aurora-config" "master"
 #UPDATE_PACKAGE "kucat" "sirpdboy/luci-theme-kucat" "master"
