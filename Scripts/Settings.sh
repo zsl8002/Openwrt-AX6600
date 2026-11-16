@@ -32,7 +32,11 @@ apply_sed_to_matches "./feeds/luci/modules/luci-mod-status/" "10_system.js" "s/(
 # 2. 注入 uci-defaults 脚本 (99-default-wifi)，仅在全新刷机/无既有配置时生效，保留配置升级绝不破坏用户既有配置
 # =========================================================
 TARGET_SSID="${WRT_SSID:-OWRT}"
-TARGET_WORD="${WRT_WORD:-12345678}"
+TARGET_WORD="${WRT_WORD:?WRT_WORD must be provided as a unique non-default Wi-Fi password}"
+if [[ "$TARGET_WORD" == "12345678" || ${#TARGET_WORD} -lt 12 || ${#TARGET_WORD} -gt 63 ]]; then
+	echo "::error::WRT_WORD must be unique and 12–63 characters; the insecure factory default is forbidden."
+	exit 1
+fi
 
 escape_sed() {
 	local str="$1"
@@ -116,7 +120,7 @@ fi
 
 # 检查是否为保留配置升级 (sysupgrade) 或系统已存在既有无线配置：
 # 在保留配置升级场景下，/etc/config/wireless 会在系统启动前被 sysupgrade 备份还原。
-# 出厂默认值（OWRT / 12345678）仅供全新刷机或恢复出厂设置（无既有无线配置）首次使用，
+# 首次刷机使用本次构建提供的唯一 Wi-Fi 密码；不得使用公开或通用默认密码，
 # 严禁篡改或覆盖用户的自定义 SSID、密码、加密协议及射频参数！
 if [ -s "$SYS_PREFIX/etc/config/wireless" ] || [ -f "$SYS_PREFIX/etc/config/wireless" ]; then
 	exit 0
