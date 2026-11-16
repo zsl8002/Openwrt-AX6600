@@ -22,7 +22,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 - 💡 **点阵屏控制** - 内置雅典娜 LED 点阵屏官方驱动与管理界面（athena-led）
 - 🚀 **开箱即用** - 预装常用网络工具与自选核心插件（Docker / PassWall2 / OpenClash）
 - 📶 **WiFi 稳定** - 无线驱动内存与系统水位线深度调优，7×24 高负载久跑不断流
-- 🔄 **源码同步** - 自动跟进 OpenWrt/ImmortalWrt 最新上游 owrt 分支
+- 🔄 **源码同步** - 仅使用审核通过的固定源码 Commit，并拒绝 SNAPSHOT / 开发版
 - 🧩 **灵活定制** - 支持自定义编译配置和插件
 
 ---
