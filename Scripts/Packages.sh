@@ -53,8 +53,21 @@ UPDATE_PACKAGE() {
 
 	# 处理克隆的仓库
 	if [[ "$PKG_SPECIAL" == "pkg" ]]; then
-		find "./$REPO_NAME"/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./ \;
-		rm -rf "./$REPO_NAME/"
+		# 部分上游仓库名与内部软件包目录同名（例如 luci-theme-argon）。
+		# 先复制到克隆目录之外的临时目录，再删除克隆目录，避免把软件包一并删除。
+		local FOUND_PKG
+		local PKG_STAGE
+		FOUND_PKG=$(find "$REPO_NAME" -mindepth 1 -maxdepth 4 -type d -iname "*$PKG_NAME*" -print -quit)
+		if [[ -z "$FOUND_PKG" ]]; then
+			echo "::error::Package directory matching '$PKG_NAME' not found in $PKG_REPO" >&2
+			rm -rf "$REPO_NAME"
+			return 1
+		fi
+		PKG_STAGE=$(mktemp -d "../.pkg-stage-${PKG_NAME}.XXXXXX")
+		cp -a "$FOUND_PKG" "$PKG_STAGE/"
+		rm -rf "$REPO_NAME"
+		mv "$PKG_STAGE/$(basename "$FOUND_PKG")" "./"
+		rmdir "$PKG_STAGE"
 	elif [[ "$PKG_SPECIAL" == "name" ]]; then
 		mv -f "$REPO_NAME" "$PKG_NAME"
 	fi
