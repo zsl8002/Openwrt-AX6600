@@ -49,24 +49,23 @@ on:
 permissions:
   contents: write
 
-env:
-  WRT_CONFIG: ${{inputs.WRT_CONFIG}}
-  WRT_THEME: ${{inputs.WRT_THEME}}
-  WRT_NAME: ${{inputs.WRT_NAME}}
-  WRT_SSID: ${{inputs.WRT_SSID}}
-  WRT_IP: ${{inputs.WRT_IP}}
-  WRT_REPO: ${{inputs.WRT_REPO}}
-  WRT_BRANCH: ${{inputs.WRT_BRANCH}}
-  WRT_SOURCE: ${{inputs.WRT_SOURCE}}
-  WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
-  WRT_PROFILE: ${{inputs.WRT_PROFILE}}
-  WRT_PKG_INFO: 无（纯净版不集成外部插件）
-  WRT_TEST: ${{inputs.WRT_TEST && 'true' || 'false'}}
-
 jobs:
   core:
     name: ${{inputs.WRT_SOURCE}}
     runs-on: ubuntu-latest
+    env:
+      WRT_CONFIG: ${{inputs.WRT_CONFIG}}
+      WRT_THEME: ${{inputs.WRT_THEME}}
+      WRT_NAME: ${{inputs.WRT_NAME}}
+      WRT_SSID: ${{inputs.WRT_SSID}}
+      WRT_IP: ${{inputs.WRT_IP}}
+      WRT_REPO: ${{inputs.WRT_REPO}}
+      WRT_BRANCH: ${{inputs.WRT_BRANCH}}
+      WRT_SOURCE: ${{inputs.WRT_SOURCE}}
+      WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
+      WRT_PROFILE: ${{inputs.WRT_PROFILE}}
+      WRT_PKG_INFO: 无（纯净版不集成外部插件）
+      WRT_TEST: ${{inputs.WRT_TEST && 'true' || 'false'}}
     outputs:
       cache_prefix: ${{steps.initialize-cache.outputs.cache_prefix}}
       cache_key: ${{steps.initialize-cache.outputs.cache_key}}
