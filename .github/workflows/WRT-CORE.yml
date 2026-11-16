@@ -516,21 +516,21 @@ jobs:
               mv -f $FILE ./upload/$NEW_FILE
             done
 
-            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \\;
+            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
 
             # Accept image formats emitted by the pinned target, including compressed images.
             mapfile -d '' FIRMWARE_FILES < <(
-              find ./upload/ -maxdepth 1 -type f \\
-                \\( -iname '*factory*.bin' -o -iname '*sysupgrade*.bin' \\
-                   -o -iname '*factory*.img' -o -iname '*sysupgrade*.img' \\
-                   -o -iname '*factory*.img.gz' -o -iname '*sysupgrade*.img.gz' \\
-                   -o -iname '*factory*.ubi' -o -iname '*sysupgrade*.ubi' \\) -print0
+              find ./upload/ -maxdepth 1 -type f \
+                \( -iname '*factory*.bin' -o -iname '*sysupgrade*.bin' \
+                   -o -iname '*factory*.img' -o -iname '*sysupgrade*.img' \
+                   -o -iname '*factory*.img.gz' -o -iname '*sysupgrade*.img.gz' \
+                   -o -iname '*factory*.ubi' -o -iname '*sysupgrade*.ubi' \) -print0
             )
             if (( ${#FIRMWARE_FILES[@]} > 0 )); then
               (cd ./upload/ && sha256sum "${FIRMWARE_FILES[@]##*/}" > sha256sums.txt)
             else
               echo "::error::No factory/sysupgrade firmware images were packaged. Available target files:"
-              find ./upload/ -maxdepth 1 -type f -printf '%f\\n' | sort
+              find ./upload/ -maxdepth 1 -type f -printf '%f\n' | sort
               exit 1
             fi
             make clean -j$(nproc)
