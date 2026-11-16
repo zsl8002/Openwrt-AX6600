@@ -69,6 +69,6 @@ jobs:
       WRT_PROFILE: ${{matrix.PROFILE}}
       #仅输出配置文件
       # workflow_dispatch boolean must be converted to the reusable workflow's string input.
-      WRT_TEST: ${{inputs.TEST && 'true' || 'false'}}
+      WRT_TEST: ${{inputs.TEST}}
     secrets:
       WRT_WORD: ${{secrets.WRT_WIFI_PASSWORD}}
