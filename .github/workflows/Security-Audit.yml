@@ -45,6 +45,21 @@ jobs:
             fail=1
           fi
 
+          echo "== Removed plugin packages must stay absent =="
+          if grep -nE '^[[:space:]]*UPDATE_PACKAGE[[:space:]]+"openclash"|^[[:space:]]*UPDATE_PACKAGE[[:space:]]+"[^"]*[Dd]ocker' Scripts/Packages.sh; then
+            echo "::error::OpenClash or Docker package source is still enabled."
+            fail=1
+          fi
+          if grep -nE '^[[:space:]]*CONFIG_PACKAGE_(luci-app-openclash|luci-app-dockerman|dockerd|docker|docker-compose|tini|kmod-veth)=y' Config/GENERAL_AX6600*.txt; then
+            echo "::error::A removed OpenClash / Docker package is enabled in a profile."
+            fail=1
+          fi
+          if ! grep -q '^CONFIG_PACKAGE_luci-theme-argon=y' Config/GENERAL_AX6600.txt ||
+             ! grep -q 'UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "[0-9a-f]{40}" "pkg"' Scripts/Packages.sh; then
+            echo "::error::Argon theme source pin or common package selection is missing."
+            fail=1
+          fi
+
           echo "== Shell syntax checks =="
           while IFS= read -r -d '' file; do
             bash -n "$file" || fail=1
