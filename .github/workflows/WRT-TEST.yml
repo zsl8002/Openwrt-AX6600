@@ -13,18 +13,19 @@ on:
         options:
           - IPQ60XX-WIFI-YES
       SOURCE:
+        description: '仅允许经过验证的 AX6600 稳定源码仓库。'
         default: 'ones20250/immortalwrt_ipq'
         required: true
         type: choice
         options:
           - ones20250/immortalwrt_ipq
-          - immortalwrt/immortalwrt
-          - LiBwrt/openwrt-6.x
-          - qosmio/openwrt-ipq
       BRANCH:
-        default: 'owrt'
+        description: '稳定版固定 Commit；禁止 SNAPSHOT、master、开发分支及任意分支。'
+        default: 'ff74343745c7ba238f959372aca5a182d2eafb8f'
         required: true
-        type: string
+        type: choice
+        options:
+          - ff74343745c7ba238f959372aca5a182d2eafb8f
       PACKAGE:
         required: false
         type: string
