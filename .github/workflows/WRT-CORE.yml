@@ -120,7 +120,10 @@ jobs:
 
       - name: Clone Code
         run: |
-          git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          git init ./wrt
+          git -C ./wrt remote add origin "$WRT_REPO"
+          git -C ./wrt fetch --depth=1 origin "$WRT_BRANCH"
+          git -C ./wrt checkout --detach FETCH_HEAD
 
           cd ./wrt/ && echo "WRT_HASH=$(git log -1 --pretty=format:'%h')" >> $GITHUB_ENV
 
@@ -431,7 +434,12 @@ jobs:
             find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
 
             # 对最终命名后的固件生成校验文件，供用户刷机前验证下载完整性；失败不阻塞发布
-            (cd ./upload/ && sha256sum *.bin > sha256sums.txt) || true
+            if compgen -G "./upload/*.bin" > /dev/null; then
+              (cd ./upload/ && sha256sum *.bin > sha256sums.txt)
+            else
+              echo "::error::No firmware .bin files were packaged; refusing to publish without checksums."
+              exit 1
+            fi
 
             make clean -j$(nproc)
           fi
