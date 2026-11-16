@@ -44,7 +44,7 @@ on:
         default: false
     secrets:
       WRT_WORD:
-        required: true
+        required: false
 
 permissions:
   contents: write
@@ -266,6 +266,17 @@ jobs:
           WRT_WORD: ${{secrets.WRT_WORD}}
         run: |
           cd ./wrt/
+
+          # Config-only validation never publishes firmware; use an ephemeral key
+          # if the repository secret is absent. Real firmware builds still require
+          # the unique WRT_WIFI_PASSWORD secret.
+          if [[ "$WRT_TEST" == "true" ]]; then
+            WRT_WORD="${WRT_WORD:-$(openssl rand -hex 16)}"
+          elif [[ -z "${WRT_WORD:-}" ]]; then
+            echo "::error::Configure repository secret WRT_WIFI_PASSWORD (12-63 characters) before building firmware."
+            exit 1
+          fi
+          export WRT_WORD
 
           if [[ "${WRT_CONFIG,,}" == *"test"* ]]; then
             cat $GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt >> .config
@@ -505,16 +516,23 @@ jobs:
               mv -f $FILE ./upload/$NEW_FILE
             done
 
-            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
+            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \\;
 
-            # 对最终命名后的固件生成校验文件，供用户刷机前验证下载完整性；失败不阻塞发布
-            if compgen -G "./upload/*.bin" > /dev/null; then
-              (cd ./upload/ && sha256sum *.bin > sha256sums.txt)
+            # Accept image formats emitted by the pinned target, including compressed images.
+            mapfile -d '' FIRMWARE_FILES < <(
+              find ./upload/ -maxdepth 1 -type f \\
+                \\( -iname '*factory*.bin' -o -iname '*sysupgrade*.bin' \\
+                   -o -iname '*factory*.img' -o -iname '*sysupgrade*.img' \\
+                   -o -iname '*factory*.img.gz' -o -iname '*sysupgrade*.img.gz' \\
+                   -o -iname '*factory*.ubi' -o -iname '*sysupgrade*.ubi' \\) -print0
+            )
+            if (( ${#FIRMWARE_FILES[@]} > 0 )); then
+              (cd ./upload/ && sha256sum "${FIRMWARE_FILES[@]##*/}" > sha256sums.txt)
             else
-              echo "::error::No firmware .bin files were packaged; refusing to publish without checksums."
+              echo "::error::No factory/sysupgrade firmware images were packaged. Available target files:"
+              find ./upload/ -maxdepth 1 -type f -printf '%f\\n' | sort
               exit 1
             fi
-
             make clean -j$(nproc)
           fi
 
