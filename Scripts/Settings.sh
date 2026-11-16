@@ -33,8 +33,8 @@ apply_sed_to_matches "./feeds/luci/modules/luci-mod-status/" "10_system.js" "s/(
 # =========================================================
 TARGET_SSID="${WRT_SSID:-OWRT}"
 TARGET_WORD="${WRT_WORD:?WRT_WORD must be provided as a unique non-default Wi-Fi password}"
-if [[ "$TARGET_WORD" == "12345678" || ${#TARGET_WORD} -lt 12 ]]; then
-	echo "::error::WRT_WORD must be unique and at least 12 characters; the insecure factory default is forbidden."
+if [[ "$TARGET_WORD" == "12345678" || ${#TARGET_WORD} -lt 12 || ${#TARGET_WORD} -gt 63 ]]; then
+	echo "::error::WRT_WORD must be unique and 12–63 characters; the insecure factory default is forbidden."
 	exit 1
 fi
 
