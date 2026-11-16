@@ -47,10 +47,8 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 env:
-  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   WRT_CONFIG: ${{inputs.WRT_CONFIG}}
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
@@ -76,7 +74,7 @@ jobs:
       cache_started: ${{steps.initialize-cache.outputs.cache_started}}
     steps:
       - name: Checkout Projects
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Initialization Environment
         env:
@@ -174,7 +172,7 @@ jobs:
       - name: Restore Build Cache
         id: check-cache
         if: env.WRT_TEST != 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           # 缓存内容（ccache/宿主工具/工具链）与 profile 无关，PURE 和 PLUS 共享同一份，避免缓存翻倍挤占配额
           key: ${{env.WRT_CACHE_KEY}}
@@ -378,7 +376,7 @@ jobs:
       - name: Upload Build Reports
         if: env.WRT_TEST != 'true' && always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: build-reports-${{env.WRT_CONFIG}}-${{env.WRT_PROFILE}}-${{env.WRT_INFO}}-${{github.run_attempt}}
           path: ./build-reports/
@@ -386,7 +384,7 @@ jobs:
 
       - name: Save Build Cache
         if: env.WRT_TEST != 'true' && success() && steps.check-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           key: ${{env.WRT_CACHE_KEY}}
           path: |
@@ -454,7 +452,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Release Firmware
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ env.WRT_CONFIG }}-${{ env.WRT_PROFILE }}-${{ env.WRT_INFO }}-${{ env.WRT_BRANCH }}-${{ env.WRT_DATE }}
           files: ./wrt/upload/*.*
@@ -492,10 +490,10 @@ jobs:
 
             🔐 默认登录信息
             管理地址：${{ env.WRT_IP }}
-            管理密码：${{ env.WRT_PW }}
+            管理密码：首次启动时请使用构建参数中设置的密码；请勿在公开 Release 中发布凭据。
 
             WiFi 名称：${{ env.WRT_SSID }}
-            WiFi 密码：${{ env.WRT_WORD }}
+            WiFi 密码：首次启动时请使用构建参数中设置的密码；请勿在公开 Release 中发布凭据。
             ━━━━━━━━━━━━━━━━━━━━━━━
 
             📶 WiFi 推荐设置（雅典娜三频三 WiFi）
@@ -529,6 +527,9 @@ jobs:
 
   cache-rollover:
     name: Roll cache generations
+    permissions:
+      actions: write
+      contents: read
     needs: core
     if: inputs.WRT_TEST != 'true' && needs.core.result == 'success'
     runs-on: ubuntu-latest
@@ -537,6 +538,7 @@ jobs:
       cancel-in-progress: false
     env:
       GH_REPO: ${{github.repository}}
+      GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       WRT_CACHE_PREFIX: ${{needs.core.outputs.cache_prefix}}
       WRT_CACHE_KEY: ${{needs.core.outputs.cache_key}}
       WRT_CACHE_STARTED: ${{needs.core.outputs.cache_started}}
