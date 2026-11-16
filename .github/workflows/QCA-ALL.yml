@@ -64,11 +64,11 @@ jobs:
       #源码名称
       WRT_SOURCE: ${{matrix.SOURCE}}
       #插件调整
-      WRT_PACKAGE: ${{inputs.PACKAGE}}
+      WRT_PACKAGE: ${{inputs.PACKAGE || ''}}
       #固件版本：PURE=纯净版，PLUS=Plus 版
       WRT_PROFILE: ${{matrix.PROFILE}}
       #仅输出配置文件
       # workflow_dispatch boolean must be converted to the reusable workflow's string input.
-      WRT_TEST: ${{inputs.TEST}}
+      WRT_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.TEST || false }}
     secrets:
       WRT_WORD: ${{secrets.WRT_WIFI_PASSWORD}}
