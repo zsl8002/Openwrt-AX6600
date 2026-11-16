@@ -55,7 +55,7 @@ jobs:
             fail=1
           fi
           if ! grep -q '^CONFIG_PACKAGE_luci-theme-argon=y' Config/GENERAL_AX6600.txt ||
-             ! grep -q 'UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "[0-9a-f]{40}" "pkg"' Scripts/Packages.sh; then
+             ! grep -Eq 'UPDATE_PACKAGE "argon" "sbwml/luci-theme-argon" "[0-9a-f]{40}" "pkg"' Scripts/Packages.sh; then
             echo "::error::Argon theme source pin or common package selection is missing."
             fail=1
           fi
