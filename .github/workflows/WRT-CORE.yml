@@ -53,9 +53,7 @@ env:
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
   WRT_SSID: ${{inputs.WRT_SSID}}
-  WRT_WORD: ${{inputs.WRT_WORD}}
   WRT_IP: ${{inputs.WRT_IP}}
-  WRT_PW: ${{inputs.WRT_PW}}
   WRT_REPO: ${{inputs.WRT_REPO}}
   WRT_BRANCH: ${{inputs.WRT_BRANCH}}
   WRT_SOURCE: ${{inputs.WRT_SOURCE}}
@@ -135,7 +133,7 @@ jobs:
           # Plus 版补充 PassWall 依赖包 feed（xray/sing-box 等）。
           # LuCI 插件本体由 Packages.sh 克隆到 package/，这里不再加 LuCI feed，避免同名包双重定义。
           if [[ "$WRT_PROFILE" == "PLUS" ]]; then
-            echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages" >> feeds.conf.default
+            echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages^efc4093be1477b66b95a33ca00e7a9d819ebc8fb" >> feeds.conf.default
           fi
 
       - name: Fix QCA8081 Port Clocks
@@ -217,7 +215,7 @@ jobs:
           : > "$GITHUB_WORKSPACE/package-versions.txt"
           $GITHUB_WORKSPACE/Scripts/Packages.sh
           if [[ "$WRT_PROFILE" == "PLUS" && -e ../feeds/passwall_packages/.git ]]; then
-            echo "passwall_packages(feed) Openwrt-Passwall/openwrt-passwall-packages main $(git -C ../feeds/passwall_packages rev-parse --short HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
+            echo "passwall_packages(feed) Openwrt-Passwall/openwrt-passwall-packages $(git -C ../feeds/passwall_packages rev-parse HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
           fi
           if [ -s "$GITHUB_WORKSPACE/package-versions.txt" ]; then
             {
@@ -232,6 +230,8 @@ jobs:
           $GITHUB_WORKSPACE/.github/scripts/prepare-i2c-tools.sh
 
       - name: Custom Settings
+        env:
+          WRT_WORD: ${{inputs.WRT_WORD}}
         run: |
           cd ./wrt/
 
