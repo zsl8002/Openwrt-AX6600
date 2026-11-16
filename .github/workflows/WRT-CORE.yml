@@ -40,7 +40,8 @@ on:
         default: PURE
       WRT_TEST:
         required: false
-        type: string
+        type: boolean
+        default: false
     secrets:
       WRT_WORD:
         required: true
@@ -60,7 +61,7 @@ env:
   WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
   WRT_PROFILE: ${{inputs.WRT_PROFILE}}
   WRT_PKG_INFO: 无（纯净版不集成外部插件）
-  WRT_TEST: ${{inputs.WRT_TEST}}
+  WRT_TEST: ${{inputs.WRT_TEST && 'true' || 'false'}}
 
 jobs:
   core:
