@@ -16,9 +16,6 @@ on:
       WRT_SSID:
         required: true
         type: string
-      WRT_WORD:
-        required: true
-        type: string
       WRT_IP:
         required: true
         type: string
@@ -44,6 +41,9 @@ on:
       WRT_TEST:
         required: false
         type: string
+    secrets:
+      WRT_WORD:
+        required: true
 
 permissions:
   contents: write
@@ -231,7 +231,7 @@ jobs:
 
       - name: Custom Settings
         env:
-          WRT_WORD: ${{inputs.WRT_WORD}}
+          WRT_WORD: ${{secrets.WRT_WORD}}
         run: |
           cd ./wrt/
 
