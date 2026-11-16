@@ -16,9 +16,6 @@ on:
       WRT_SSID:
         required: true
         type: string
-      WRT_WORD:
-        required: true
-        type: string
       WRT_IP:
         required: true
         type: string
@@ -44,20 +41,19 @@ on:
       WRT_TEST:
         required: false
         type: string
+    secrets:
+      WRT_WORD:
+        required: true
 
 permissions:
   contents: write
-  actions: write
 
 env:
-  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   WRT_CONFIG: ${{inputs.WRT_CONFIG}}
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
   WRT_SSID: ${{inputs.WRT_SSID}}
-  WRT_WORD: ${{inputs.WRT_WORD}}
   WRT_IP: ${{inputs.WRT_IP}}
-  WRT_PW: ${{inputs.WRT_PW}}
   WRT_REPO: ${{inputs.WRT_REPO}}
   WRT_BRANCH: ${{inputs.WRT_BRANCH}}
   WRT_SOURCE: ${{inputs.WRT_SOURCE}}
@@ -76,7 +72,9 @@ jobs:
       cache_started: ${{steps.initialize-cache.outputs.cache_started}}
     steps:
       - name: Checkout Projects
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Initialization Environment
         env:
@@ -110,7 +108,7 @@ jobs:
           esac
           echo "WRT_PROFILE=$WRT_PROFILE_UPPER" >> $GITHUB_ENV
           if [[ "$WRT_PROFILE_UPPER" == "PLUS" ]]; then
-            echo "WRT_PROFILE_DESC=Plus 版，预装 OpenClash、PassWall2、Docker/Dockerman、AdGuard Home、DDNS、ttyd、UPnP 及分区扩容、网络唤醒等实用插件，刷完即用；启用 AdGuard Home 与代理插件前请先阅读 README 的「PLUS 版使用提示」" >> $GITHUB_ENV
+            echo "WRT_PROFILE_DESC=Plus 版，预装 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd、UPnP 及分区扩容、网络唤醒等实用插件；启用 AdGuard Home 与代理服务前请先阅读 README 的「PLUS 版使用提示」" >> $GITHUB_ENV
           else
             echo "WRT_PROFILE_DESC=纯净版，轻量稳定，仅含基础网络与常用管理插件，扩展插件按需自行安装" >> $GITHUB_ENV
           fi
@@ -124,7 +122,10 @@ jobs:
 
       - name: Clone Code
         run: |
-          git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          git init ./wrt
+          git -C ./wrt remote add origin "$WRT_REPO"
+          git -C ./wrt fetch --depth=1 origin "$WRT_BRANCH"
+          git -C ./wrt checkout --detach FETCH_HEAD
 
           cd ./wrt/ && echo "WRT_HASH=$(git log -1 --pretty=format:'%h')" >> $GITHUB_ENV
 
@@ -137,7 +138,7 @@ jobs:
           # Plus 版补充 PassWall 依赖包 feed（xray/sing-box 等）。
           # LuCI 插件本体由 Packages.sh 克隆到 package/，这里不再加 LuCI feed，避免同名包双重定义。
           if [[ "$WRT_PROFILE" == "PLUS" ]]; then
-            echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages" >> feeds.conf.default
+            echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages^efc4093be1477b66b95a33ca00e7a9d819ebc8fb" >> feeds.conf.default
           fi
 
       - name: Fix QCA8081 Port Clocks
@@ -174,7 +175,7 @@ jobs:
       - name: Restore Build Cache
         id: check-cache
         if: env.WRT_TEST != 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           # 缓存内容（ccache/宿主工具/工具链）与 profile 无关，PURE 和 PLUS 共享同一份，避免缓存翻倍挤占配额
           key: ${{env.WRT_CACHE_KEY}}
@@ -219,7 +220,7 @@ jobs:
           : > "$GITHUB_WORKSPACE/package-versions.txt"
           $GITHUB_WORKSPACE/Scripts/Packages.sh
           if [[ "$WRT_PROFILE" == "PLUS" && -e ../feeds/passwall_packages/.git ]]; then
-            echo "passwall_packages(feed) Openwrt-Passwall/openwrt-passwall-packages main $(git -C ../feeds/passwall_packages rev-parse --short HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
+            echo "passwall_packages(feed) Openwrt-Passwall/openwrt-passwall-packages $(git -C ../feeds/passwall_packages rev-parse HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
           fi
           if [ -s "$GITHUB_WORKSPACE/package-versions.txt" ]; then
             {
@@ -234,6 +235,8 @@ jobs:
           $GITHUB_WORKSPACE/.github/scripts/prepare-i2c-tools.sh
 
       - name: Custom Settings
+        env:
+          WRT_WORD: ${{secrets.WRT_WORD}}
         run: |
           cd ./wrt/
 
@@ -295,7 +298,7 @@ jobs:
           # 5. PLUS 核心插件入选断言 (当 WRT_PROFILE 为 PLUS 时)
           if [[ "${WRT_PROFILE_UPPER:-${WRT_PROFILE}}" == "PLUS" ]]; then
             echo "--- 检查 PLUS 核心插件意图一致性 ---"
-            for PKG in luci-app-passwall2 luci-app-openclash luci-app-dockerman luci-app-adguardhome luci-app-wolultra; do
+            for PKG in luci-app-passwall2 luci-app-adguardhome luci-app-wolultra luci-theme-argon; do
               PKG_INTENT="CONFIG_PACKAGE_${PKG}=y"
               if [[ -f .config.seed ]]; then
                 PKG_INTENT=$(grep -E "^(#\s*)?CONFIG_PACKAGE_${PKG}(=|[[:space:]])" .config.seed | tail -n 1 || true)
@@ -314,7 +317,19 @@ jobs:
             done
           fi
 
-          # 6. Qualcomm PPE 时钟驱动补丁生效断言
+          # 6. 禁止重新引入已移除的 OpenClash / Docker 组件，并确保 Argon 主题入选
+          for PKG in luci-app-openclash luci-app-dockerman dockerd docker docker-compose tini kmod-veth; do
+            if grep -q "^CONFIG_PACKAGE_${PKG}=y" .config; then
+              echo "::error::断言失败: 已移除组件 CONFIG_PACKAGE_${PKG} 被重新启用！"
+              FAIL=1
+            fi
+          done
+          if ! grep -q "^CONFIG_PACKAGE_luci-theme-argon=y" .config; then
+            echo "::error::断言失败: luci-theme-argon 未实际入选！"
+            FAIL=1
+          fi
+
+          # 7. Qualcomm PPE 时钟驱动补丁生效断言
           PPE_DRIVER="target/linux/qualcommax/files/drivers/net/ethernet/qualcomm/qca_ppe_main.c"
           IPQ6018_PATCH="target/linux/qualcommax/patches-6.18/0918-clk-qcom-gcc-ipq6018-keep-port-5-on-uniphy1-at-SGMII-rates.patch"
           IPQ8074_CONFLICT="target/linux/qualcommax/patches-6.18/0919-clk-qcom-gcc-ipq8074-keep-port-5-on-uniphy1-at-SGMII-rates.patch"
@@ -378,7 +393,7 @@ jobs:
       - name: Upload Build Reports
         if: env.WRT_TEST != 'true' && always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: build-reports-${{env.WRT_CONFIG}}-${{env.WRT_PROFILE}}-${{env.WRT_INFO}}-${{github.run_attempt}}
           path: ./build-reports/
@@ -386,7 +401,7 @@ jobs:
 
       - name: Save Build Cache
         if: env.WRT_TEST != 'true' && success() && steps.check-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           key: ${{env.WRT_CACHE_KEY}}
           path: |
@@ -433,7 +448,12 @@ jobs:
             find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
 
             # 对最终命名后的固件生成校验文件，供用户刷机前验证下载完整性；失败不阻塞发布
-            (cd ./upload/ && sha256sum *.bin > sha256sums.txt) || true
+            if compgen -G "./upload/*.bin" > /dev/null; then
+              (cd ./upload/ && sha256sum *.bin > sha256sums.txt)
+            else
+              echo "::error::No firmware .bin files were packaged; refusing to publish without checksums."
+              exit 1
+            fi
 
             make clean -j$(nproc)
           fi
@@ -454,7 +474,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Release Firmware
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ env.WRT_CONFIG }}-${{ env.WRT_PROFILE }}-${{ env.WRT_INFO }}-${{ env.WRT_BRANCH }}-${{ env.WRT_DATE }}
           files: ./wrt/upload/*.*
@@ -492,10 +512,10 @@ jobs:
 
             🔐 默认登录信息
             管理地址：${{ env.WRT_IP }}
-            管理密码：${{ env.WRT_PW }}
+            管理密码：首次启动时请使用构建参数中设置的密码；请勿在公开 Release 中发布凭据。
 
             WiFi 名称：${{ env.WRT_SSID }}
-            WiFi 密码：${{ env.WRT_WORD }}
+            WiFi 密码：首次启动时请使用构建参数中设置的密码；请勿在公开 Release 中发布凭据。
             ━━━━━━━━━━━━━━━━━━━━━━━
 
             📶 WiFi 推荐设置（雅典娜三频三 WiFi）
@@ -510,7 +530,7 @@ jobs:
             - 已是 OpenWrt/ImmortalWrt 升级：选文件名带 sysupgrade 的文件
             - 刷机 / 救砖完整教程：[刷机救砖教程](${{ github.server_url }}/${{ github.repository }}/blob/main/Docs/刷机救砖教程.md)
             - Config-*.txt：本次编译的完整 .config 配置，便于复现或二次定制
-            - Packages-*.txt：外部插件（OpenClash / PassWall2 等）的仓库、分支与 commit 记录（纯净版无外部插件，无此文件）
+            - Packages-*.txt：外部插件（PassWall2、Argon 主题等）的仓库与 commit 记录（纯净版无外部插件，无此文件）
             - sha256sums.txt：固件校验文件，刷机前请先校验下载完整性（方法见 README 刷机前必读）
 
             ⚠️ 风险提示
@@ -529,6 +549,9 @@ jobs:
 
   cache-rollover:
     name: Roll cache generations
+    permissions:
+      actions: write
+      contents: read
     needs: core
     if: inputs.WRT_TEST != 'true' && needs.core.result == 'success'
     runs-on: ubuntu-latest
@@ -537,6 +560,7 @@ jobs:
       cancel-in-progress: false
     env:
       GH_REPO: ${{github.repository}}
+      GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       WRT_CACHE_PREFIX: ${{needs.core.outputs.cache_prefix}}
       WRT_CACHE_KEY: ${{needs.core.outputs.cache_key}}
       WRT_CACHE_STARTED: ${{needs.core.outputs.cache_started}}
