@@ -507,24 +507,18 @@ jobs:
 
             find ./bin/targets/ -iregex ".*\(buildinfo\|json\|sha256sums\|packages\)$" -exec rm -rf {} +
 
-            for FILE in $(find ./bin/targets/ -type f -iname "*$WRT_TARGET*") ; do
-              EXT=$(basename $FILE | cut -d '.' -f 2-)
-              NAME=$(basename $FILE | cut -d '.' -f 1 | grep -io "\($WRT_TARGET\).*")
-              # 去掉恒定的平台前缀（qualcommax-），保留 ipq60xx 及设备型号
-              NAME=${NAME#*-}
-              NEW_FILE="$WRT_INFO"-"$WRT_BRANCH"-"${WRT_PROFILE,,}"-"$NAME"-"$WRT_DATE"."$EXT"
-              mv -f $FILE ./upload/$NEW_FILE
-            done
+            # Preserve upstream image filenames. Some target builders do not
+            # include "factory"/"sysupgrade" in every installable image name.
+            # Move all target outputs first, then identify firmware by image format.
+            if [[ -d ./bin/targets/ ]]; then
+              find ./bin/targets/ -type f -exec mv -f -t ./upload/ -- {} +
+            fi
 
-            find ./bin/targets/ -type f -exec mv -f {} ./upload/ \;
-
-            # Accept image formats emitted by the pinned target, including compressed images.
             mapfile -d '' FIRMWARE_FILES < <(
-              find ./upload/ -maxdepth 1 -type f \
-                \( -iname '*factory*.bin' -o -iname '*sysupgrade*.bin' \
-                   -o -iname '*factory*.img' -o -iname '*sysupgrade*.img' \
-                   -o -iname '*factory*.img.gz' -o -iname '*sysupgrade*.img.gz' \
-                   -o -iname '*factory*.ubi' -o -iname '*sysupgrade*.ubi' \) -print0
+              find ./upload/ -maxdepth 1 -type f \\
+                \\( -iname '*.bin' -o -iname '*.img' -o -iname '*.img.gz' \\
+                   -o -iname '*.bin.gz' -o -iname '*.ubi' -o -iname '*.ubi.gz' \\
+                   -o -iname '*.itb' -o -iname '*.fit' -o -iname '*.trx' \\) -print0
             )
             if (( ${#FIRMWARE_FILES[@]} > 0 )); then
               (cd ./upload/ && sha256sum "${FIRMWARE_FILES[@]##*/}" > sha256sums.txt)
