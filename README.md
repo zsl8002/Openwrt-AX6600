@@ -241,8 +241,8 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 编译不会随代码提交自动触发，需通过以下方式之一：
 
 - **手动全量编译**：Actions → `QCA-ALL` → Run workflow，同时构建 PURE 与 PLUS 两个版本。
-- **配置验证**：Actions → `WRT-TEST`，可选择 `PROFILE` 并勾选 `TEST=true`，仅生成最终 `.config` 不编译固件，几分钟出结果。
-- **每日自动编译**：每天早上 6 点（北京时间）由 `Auto-Clean` 清理旧产物后自动触发。
+- **配置验证**：Actions → `WRT-TEST`，选择 `PROFILE` 并勾选 `TEST=true`，仅生成最终 `.config` 不编译固件；源码仅允许审核过的固定 Commit。若源码版本为 `SNAPSHOT`、空版本或非正式数字版本，验证和编译都会主动失败。
+- **自动编译**：由 `Auto-Clean` 工作流完成后触发 `QCA-ALL`；定时计划需在启用 cron 后才会每日运行。
 
 ---
 
