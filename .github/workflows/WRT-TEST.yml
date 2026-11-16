@@ -80,6 +80,6 @@ jobs:
       #固件版本
       WRT_PROFILE: ${{inputs.PROFILE}}
       #仅输出配置文件
-      WRT_TEST: ${{inputs.TEST && 'true' || 'false'}}
+      WRT_TEST: ${{inputs.TEST}}
     secrets:
       WRT_WORD: ${{secrets.WRT_WIFI_PASSWORD}}
