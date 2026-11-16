@@ -22,7 +22,46 @@ jobs:
           fail=0
 
           echo "== Third-party Actions must be pinned to full commit SHAs =="
-          if grep -RInE '^[[:space:]]*uses:[[:space:]]*[^./[:space:]]+@([^[:space:]#]{1,39}|[[:alnum:]_.-]+)[[:space:]]*(#.*)?$' .github/workflows; then
+          if grep -RInE '^[[:space:]]*uses:[[:space:]]*[^./[:space:]]+@' .github/workflows | grep -vE '@[0-9a-f]{40}([[:space:]]+#.*)?
+            echo "::error::Floating or non-SHA GitHub Action reference detected."
+            fail=1
+          fi
+
+          echo "== No globally exported GitHub token =="
+          if grep -RInE '^[[:space:]]*GITHUB_TOKEN:[[:space:]]*\$\{\{[[:space:]]*secrets\.GITHUB_TOKEN' .github/workflows; then
+            echo "::error::GITHUB_TOKEN must not be exported globally."
+            fail=1
+          fi
+
+          echo "== No public release of credentials or weak Wi-Fi defaults =="
+          if grep -nE '管理密码：\$\{\{|WiFi 密码：\$\{\{|12345678' .github/workflows/WRT-CORE.yml Scripts/Settings.sh; then
+            echo "::error::Credential disclosure or weak default detected."
+            fail=1
+          fi
+
+          echo "== Package sources must use full immutable commit pins =="
+          if ! grep -qE '^[[:space:]]*PKG_COMMIT_PIN=|local PKG_COMMIT_PIN=\$3' Scripts/Packages.sh ||
+             grep -nE 'UPDATE_PACKAGE .*"(master|main|dev|latest)"' Scripts/Packages.sh; then
+            echo "::error::Unpinned plugin source detected."
+            fail=1
+          fi
+
+          echo "== Shell syntax checks =="
+          while IFS= read -r -d '' file; do
+            bash -n "$file" || fail=1
+          done < <(find Scripts .github/scripts tests -type f -name '*.sh' -print0)
+
+          echo "== Known malformed U-Boot command check =="
+          if grep -RInF '&& &&' Docs; then
+            echo "::error::Malformed chained command found."
+            fail=1
+          fi
+
+          if (( fail != 0 )); then
+            exit 1
+          fi
+          echo "Security invariants passed."
+; then
             echo "::error::Floating or non-SHA GitHub Action reference detected."
             fail=1
           fi
