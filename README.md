@@ -22,7 +22,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 - 💡 **点阵屏控制** - 内置雅典娜 LED 点阵屏官方驱动与管理界面（athena-led）
 - 🚀 **开箱即用** - 预装常用网络工具与自选核心插件（Docker / PassWall2 / OpenClash）
 - 📶 **WiFi 稳定** - 无线驱动内存与系统水位线深度调优，7×24 高负载久跑不断流
-- 🔄 **源码同步** - 自动跟进 OpenWrt/ImmortalWrt 最新上游 owrt 分支
+- 🔄 **源码同步** - 经审查后更新并固定 OpenWrt/ImmortalWrt 上游源码 commit
 - 🧩 **灵活定制** - 支持自定义编译配置和插件
 
 ---
@@ -236,13 +236,25 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 | `Config/GENERAL_AX6600_PLUS.txt` | Plus 版增量配置，仅 PLUS 生效 |
 | `Config/IPQ60XX-WIFI-YES.txt` | 设备与平台基础配置 |
 
+### 安全构建前置设置（必读）
+
+首次运行 `QCA-ALL` 或 `WRT-TEST` 前，在仓库 **Settings → Secrets and variables → Actions → New repository secret** 中创建：
+
+- Name：`WRT_WIFI_PASSWORD`
+- Value：唯一的 Wi-Fi 密码，长度 12–63 个字符；不要复用其他设备、网站或账户的密码。
+- 不要把密码写进工作流 YAML、脚本、README 或公开 Release 说明。工作流会在配置步骤单独读取该 Secret，缺失或弱密码会直接终止构建。
+
+**重要：** Wi-Fi 密码会被写入固件的无线配置。只要固件本身公开发布，具备固件文件的任何人都可能提取该密码。因此这个 Secret 只能防止凭据出现在源码、日志和 Release 文本中，不能让公开固件内嵌的密码保持机密；公开发布时请使用专用于该固件的独立密码，切勿复用。
+
+生产构建使用固定的上游源码 commit 和固定的第三方 Action / 插件 commit。升级这些锁定版本时，应先审查上游变更，再更新 SHA。自动删除 Release、标签和工作流记录已停用，以保留固件审计及回滚依据。手动清理缓存仍保留为独立操作。
+
 ### 触发编译
 
 编译不会随代码提交自动触发，需通过以下方式之一：
 
 - **手动全量编译**：Actions → `QCA-ALL` → Run workflow，同时构建 PURE 与 PLUS 两个版本。
 - **配置验证**：Actions → `WRT-TEST`，可选择 `PROFILE` 并勾选 `TEST=true`，仅生成最终 `.config` 不编译固件，几分钟出结果。
-- **每日自动编译**：每天早上 6 点（北京时间）由 `Auto-Clean` 清理旧产物后自动触发。
+- **自动编译**：当前不启用每日自动清理/触发；需要更新时手动运行 `QCA-ALL`，以避免自动清理历史 Release 和审计记录。
 
 ---
 
@@ -256,7 +268,7 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 | **网络性能** | 基础 | ✅ 千兆 / 2.5G 双工硬件流表卸载（支持常见单向/双向流卸载） |
 | **自定义插件** | ❌ 不支持 | ✅ 完全支持（Docker / PassWall2 / OpenClash 开箱即用） |
 | **构建速度** | ❌ 慢 | ✅ CI 宿主工具穿透与预编译优化（跳过 Go/Rust 引导工具链源码编译） |
-| **定期更新** | ❌ 不定期 | ✅ 自动跟进上游 owrt 分支云编译 |
+| **定期更新** | ❌ 不定期 | ✅ 使用固定源码 commit 云编译，升级时人工审查并更新锁定版本 |
 | **开源透明** | ❌ 闭源 | ✅ 全开源公开 |
 
 ---
