@@ -44,13 +44,15 @@ on:
 
 #CI权限
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 #CI任务
 jobs:
   config:
     name: ${{inputs.CONFIG}}
+    permissions:
+      contents: write
+      actions: write
     #调用公用编译核心WRT-CORE.yml
     uses: ./.github/workflows/WRT-CORE.yml
     with:
@@ -62,8 +64,6 @@ jobs:
       WRT_NAME: OWRT
       #默认WIFI名称
       WRT_SSID: OWRT
-      #默认WIFI密码
-      WRT_WORD: 12345678
       #默认地址
       WRT_IP: 192.168.10.1
       #默认密码，仅作提示，修改无用
@@ -80,3 +80,5 @@ jobs:
       WRT_PROFILE: ${{inputs.PROFILE}}
       #仅输出配置文件
       WRT_TEST: ${{inputs.TEST}}
+    secrets:
+      WRT_WORD: ${{secrets.WRT_WIFI_PASSWORD}}

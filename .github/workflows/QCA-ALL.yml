@@ -23,13 +23,15 @@ on:
 
 #CI权限
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 #CI任务
 jobs:
   config:
     name: ${{matrix.CONFIG}}
+    permissions:
+      contents: write
+      actions: write
     strategy:
       fail-fast: false
       #max-parallel: 3
@@ -37,7 +39,7 @@ jobs:
         CONFIG: [IPQ60XX-WIFI-YES]
         PROFILE: [PURE, PLUS]
         SOURCE: [ones20250/immortalwrt_ipq]
-        BRANCH: [owrt]
+        BRANCH: [ff74343745c7ba238f959372aca5a182d2eafb8f]
 
     #调用公用编译核心WRT-CORE.yml
     uses: ./.github/workflows/WRT-CORE.yml
@@ -46,13 +48,11 @@ jobs:
       WRT_CONFIG: ${{matrix.CONFIG}}
       #默认主题
       #WRT_THEME: aurora
-      WRT_THEME: bootstrap
+      WRT_THEME: argon
       #默认主机名
       WRT_NAME: OWRT
       #默认WIFI名称
       WRT_SSID: OWRT
-      #默认WIFI密码
-      WRT_WORD: 12345678
       #默认地址
       WRT_IP: 192.168.10.1
       #默认密码，仅作提示，修改无用
@@ -69,3 +69,5 @@ jobs:
       WRT_PROFILE: ${{matrix.PROFILE}}
       #仅输出配置文件
       WRT_TEST: ${{inputs.TEST}}
+    secrets:
+      WRT_WORD: ${{secrets.WRT_WIFI_PASSWORD}}

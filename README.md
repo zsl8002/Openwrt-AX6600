@@ -20,9 +20,9 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 - 🎯 **全锥 NAT** - 原生 SONiC FullCone NAT1，游戏联机与 P2P 穿透无阻
 - ❄️ **低温运行** - 移除 NSS 闭源高发热组件，待机温度显著降低 5~10℃
 - 💡 **点阵屏控制** - 内置雅典娜 LED 点阵屏官方驱动与管理界面（athena-led）
-- 🚀 **开箱即用** - 预装常用网络工具与自选核心插件（Docker / PassWall2 / OpenClash）
+- 🚀 **开箱即用** - 预装常用网络工具与自选核心插件（Argon 主题 / PassWall2）
 - 📶 **WiFi 稳定** - 无线驱动内存与系统水位线深度调优，7×24 高负载久跑不断流
-- 🔄 **源码同步** - 自动跟进 OpenWrt/ImmortalWrt 最新上游 owrt 分支
+- 🔄 **源码同步** - 经审查后更新并固定 OpenWrt/ImmortalWrt 上游源码 commit
 - 🧩 **灵活定制** - 支持自定义编译配置和插件
 
 ---
@@ -34,7 +34,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 | 版本 | 下载入口 | 适合场景 |
 |------|----------|----------|
 | 🍃 `PURE` 纯净版 | 🎯 **[👉 下载最新 PURE 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PURE&expanded=true)** | 轻量稳定，日常推荐，插件按需自装 |
-| 🚀 `PLUS` 版 | 🎯 **[👉 下载最新 PLUS 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PLUS&expanded=true)** | OpenClash / PassWall2 / Docker / AdGuard Home 开箱即用 |
+| 🚀 `PLUS` 版 | 🎯 **[👉 下载最新 PLUS 固件](https://github.com/ones20250/Openwrt-AX6600/releases?q=PLUS&expanded=true)** | PassWall2 / Argon 主题 / AdGuard Home 开箱即用 |
 
 > ⭐ 固件对你有用的话，顺手点个 Star —— 这是对持续维护最好的支持！
 
@@ -54,7 +54,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 | **编译时间** | 显示的时间为编译开始时间，用于对应上游源码版本 |
 | **版本划分** | 默认同时构建 `PURE` 纯净版与 `PLUS` 版 |
 | **基础功能** | 纯净版保持当前轻量配置，包含完整网络功能栈 |
-| **扩展插件** | Plus 版额外集成 OpenClash、PassWall2、Docker / Dockerman、AdGuard Home、DDNS、ttyd 终端、UPnP 等常用组件，也可通过自定义配置 `.config` 文件增加插件 |
+| **扩展插件** | Plus 版额外集成 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd 终端、UPnP 等常用组件，也可通过自定义配置 `.config` 文件增加插件 |
 | **硬件平台** | 基于 QUALCOMMAX（IPQ6010）架构 |
 | **性能优化** | 针对 IPQ6010 平台进行网络性能调优 |
 
@@ -63,7 +63,7 @@ OpenWrt / AX6600 / IPQ6010 / JDCloud RE-CS-02 / PPE / Router Firmware / Cloud Bu
 | 版本 | 适合人群 | 预置内容 |
 |------|----------|----------|
 | `PURE` 纯净版 | 希望系统轻量、稳定，按需自行安装插件的用户 | 保持当前配置，预装基础网络与常用管理插件 |
-| `PLUS` 版 | 希望刷完即用常见扩展服务的用户 | 在纯净版基础上增加 OpenClash、PassWall2、Docker / Dockerman、AdGuard Home、DDNS、ttyd 终端、UPnP，以及分区扩容（partexp）、网络唤醒（wolultra）等实用插件 |
+| `PLUS` 版 | 希望刷完即用常见扩展服务的用户 | 在纯净版基础上增加 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd 终端、UPnP，以及分区扩容（partexp）、网络唤醒（wolultra）等实用插件 |
 
 > 💡 Releases 中的文件名会包含 `pure` 或 `plus`，请按需求下载对应版本。
 
@@ -75,7 +75,7 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 |------|------|
 | `源码作者-分支-pure/plus-设备型号-时间.bin` 等 | 固件本体；文件名带 `factory` 用于从原厂固件首次刷入，带 `sysupgrade` 用于 OpenWrt/ImmortalWrt 系统内升级 |
 | `Config-配置-版本-作者-分支-时间.txt` | 本次编译使用的完整 `.config`，便于复现构建或二次定制 |
-| `Packages-配置-版本-作者-分支-时间.txt` | 外部插件（OpenClash / PassWall2 及依赖 feed）的仓库、分支与 commit 记录，仅 `PLUS` 版生成，便于排查上游变更 |
+| `Packages-配置-版本-作者-分支-时间.txt` | 外部插件（PassWall2 及依赖 feed）的仓库、分支与 commit 记录，仅 `PLUS` 版生成，便于排查上游变更 |
 
 ---
 
@@ -85,14 +85,13 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 > ### 架构升级与系统升级注意事项
 > 本次迁移全面切换至 **Qualcomm PPE 开源硬件加速** 架构，并修正了 LuCI 防火墙管理界面包名（启用内嵌于 firewall4 的 SONiC FullCone NAT1）。
 > - **目标分区红线**：本次 PLUS 升级包约 160MB，升级前必须核实目标系统分区（`rootfs`）已扩容（大于 200MB，原厂 60MB 分区绝对不能刷入 PLUS 版，不能以整机 eMMC 存储容量误判）。
-> - **Docker 数据保护**：`sysupgrade` 默认会重置内部 Flash 的 overlay 分区，**保留配置不等于保留整个 overlay**！若 Docker 数据位于内部 overlay，升级前必须完整导出到电脑；若位于独立分区，升级后必须先核验挂载再启动 Docker。
+> - **用户数据保护**：`sysupgrade` 默认会重置内部 Flash 的 overlay 分区，**保留配置不等于保留整个 overlay**！重要数据请提前备份至外部存储。
 > - **平滑保留配置升级**：可保留现有网络、Wi-Fi、DHCP、防火墙与用户规则，升级后仅需精准清理失效的 NSS 专用节（如 `firewall.qcanssecm`），无需为了启用 PPE 而覆盖整份旧防火墙配置。
 > - **跨架构新手建议**：若旧版系统配置过度杂乱或曾做过重度魔改，建议导出备份后选择不保留配置升级（`sysupgrade -n 固件文件名.bin`），待进入系统确认正常后再导入配置。
 
 > ⚠️ **重要提示：** 以下操作涉及 U-Boot 和分区修改，**请务必先备份重要数据**，谨慎操作！
 
 ### 详细教程
-- 📖 **[保留配置升级与 Docker 备份恢复指南 →](Docs/AX6600保留配置升级与Docker备份恢复指南.md)**（升级前分区体检 / Docker 数据全量备份 / 保留配置升级 / NSS 遗留项精准清理 / 验收全流程）
 - 📖 **[完整刷机救砖教程 →](Docs/刷机救砖教程.md)**（开 SSH / 备份分区 / 刷 U-Boot / 9008 救砖全流程，推荐新手通读）
 
 ### 刷机前必读
@@ -188,23 +187,23 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 
 - 两个版本由工作流参数 `WRT_PROFILE` 区分，所有 Plus 版逻辑（额外配置、feed、插件克隆）均由该条件隔离，**纯净版产物不受 Plus 版任何改动影响**。
 - Plus 版插件来源唯一：LuCI 插件本体由 `Scripts/Packages.sh` 克隆到 `package/`（优先级高于 feeds），依赖包（xray、sing-box 等）由 `passwall_packages` feed 提供，避免同名包双重定义。
-- Plus 版配置 `Config/GENERAL_AX6600_PLUS.txt` 追加在通用配置之后，按 kconfig 规则覆盖纯净版关闭的选项（如 Docker 所需内核模块、`dnsmasq-full`）。
+- Plus 版配置 `Config/GENERAL_AX6600_PLUS.txt` 追加在通用配置之后，按 kconfig 规则覆盖纯净版关闭的选项（如 PassWall2 所需核心及代理依赖）。
 - 编译缓存（ccache / 工具链）与版本无关，PURE 与 PLUS 共享同一份，不额外占用缓存配额。
 
 ### 版本与验证建议
 
 - `PURE`：推荐作为日常稳定版，保持当前轻量配置。
-- `PLUS`：Plus 版会额外集成 OpenClash、PassWall2、Docker / Dockerman、AdGuard Home、DDNS、ttyd、UPnP 等，固件体积和运行资源占用都会明显高于纯净版。
+- `PLUS`：Plus 版会额外集成 PassWall2、Argon 主题、AdGuard Home、DDNS、ttyd、UPnP 等，固件体积和运行资源占用都会高于纯净版。
 - 手动测试时可在 `WRT-TEST` 工作流选择 `PROFILE=PURE` 或 `PROFILE=PLUS`；建议 Plus 版发布前至少先用 `TEST=true` 生成最终 `.config`，再用完整编译确认上游插件依赖没有变化。
-- Release 会额外上传 `Packages-*.txt` 记录 Plus 版外部插件仓库、分支和 commit，方便排查 OpenClash / PassWall2 上游变更导致的编译问题。
+- Release 会额外上传 `Packages-*.txt` 记录外部插件仓库和 commit，方便排查 PassWall2 / Argon 上游变更导致的编译问题。
 
 > ⚠️ Plus 版依赖外部插件仓库和上游 feeds，若上游调整包名或依赖，可能需要同步更新 `Config/GENERAL_AX6600_PLUS.txt`。
 
 ### PLUS 版使用提示
 
 - **AdGuard Home 首次启用**：出厂默认关闭。启用服务后访问 `http://路由器IP:3000` 完成安装向导，向导中 **DNS 监听端口请填 `5553`**（`53` 已被系统 dnsmasq 占用，填 53 会报错）；完成后在 LuCI「网络 → DHCP/DNS」的「DNS 转发」中填入 `127.0.0.1#5553` 并勾选「忽略解析文件」，广告过滤即对全局生效。
-- **代理插件二选一**：OpenClash 与 PassWall2 工作机制相同（接管 DNS + 透明代理规则），同时启用会互相抢占，轻则其中一个失效、分流错乱，重则断网，请只启用其中一个，切换前先停用当前插件。
-- **Docker 存储去向**：Docker 数据默认写入系统分区，容易撑爆。建议先用「分区扩容（partexp）」将空闲 eMMC 挂载为独立分区，再在 Docker 设置中把存储路径指向该分区。
+- **代理服务**：PLUS 版集成 PassWall2，PURE 版保持精简，不预装代理管理插件。
+
 
 ## 📂 项目结构
 
@@ -236,13 +235,25 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 | `Config/GENERAL_AX6600_PLUS.txt` | Plus 版增量配置，仅 PLUS 生效 |
 | `Config/IPQ60XX-WIFI-YES.txt` | 设备与平台基础配置 |
 
+### 安全构建前置设置（必读）
+
+首次运行 `QCA-ALL` 或 `WRT-TEST` 前，在仓库 **Settings → Secrets and variables → Actions → New repository secret** 中创建：
+
+- Name：`WRT_WIFI_PASSWORD`
+- Value：唯一的 Wi-Fi 密码，长度 12–63 个字符；不要复用其他设备、网站或账户的密码。
+- 不要把密码写进工作流 YAML、脚本、README 或公开 Release 说明。工作流会在配置步骤单独读取该 Secret，缺失或弱密码会直接终止构建。
+
+**重要：** Wi-Fi 密码会被写入固件的无线配置。只要固件本身公开发布，具备固件文件的任何人都可能提取该密码。因此这个 Secret 只能防止凭据出现在源码、日志和 Release 文本中，不能让公开固件内嵌的密码保持机密；公开发布时请使用专用于该固件的独立密码，切勿复用。
+
+生产构建使用固定的上游源码 commit 和固定的第三方 Action / 插件 commit。升级这些锁定版本时，应先审查上游变更，再更新 SHA。自动删除 Release、标签和工作流记录已停用，以保留固件审计及回滚依据。手动清理缓存仍保留为独立操作。
+
 ### 触发编译
 
 编译不会随代码提交自动触发，需通过以下方式之一：
 
 - **手动全量编译**：Actions → `QCA-ALL` → Run workflow，同时构建 PURE 与 PLUS 两个版本。
 - **配置验证**：Actions → `WRT-TEST`，可选择 `PROFILE` 并勾选 `TEST=true`，仅生成最终 `.config` 不编译固件，几分钟出结果。
-- **每日自动编译**：每天早上 6 点（北京时间）由 `Auto-Clean` 清理旧产物后自动触发。
+- **自动编译**：当前不启用每日自动清理/触发；需要更新时手动运行 `QCA-ALL`，以避免自动清理历史 Release 和审计记录。
 
 ---
 
@@ -254,9 +265,9 @@ Releases 页面每个版本包含以下文件（PURE 与 PLUS 分开发布，Rel
 | **硬件加速** | ⚠️ 原厂闭源 NSS 架构 | ✅ Qualcomm PPE 开源硬件加速 + Flowtable 硬件卸载（免除 NSS 闭源微码常驻开销） |
 | **NAT 模式** | 普通锥型 NAT | ✅ 原生 SONiC FullCone NAT1（集成于 firewall4） |
 | **网络性能** | 基础 | ✅ 千兆 / 2.5G 双工硬件流表卸载（支持常见单向/双向流卸载） |
-| **自定义插件** | ❌ 不支持 | ✅ 完全支持（Docker / PassWall2 / OpenClash 开箱即用） |
+| **自定义插件** | ❌ 不支持 | ✅ 完全支持（Argon 主题 / PassWall2 开箱即用） |
 | **构建速度** | ❌ 慢 | ✅ CI 宿主工具穿透与预编译优化（跳过 Go/Rust 引导工具链源码编译） |
-| **定期更新** | ❌ 不定期 | ✅ 自动跟进上游 owrt 分支云编译 |
+| **定期更新** | ❌ 不定期 | ✅ 使用固定源码 commit 云编译，升级时人工审查并更新锁定版本 |
 | **开源透明** | ❌ 闭源 | ✅ 全开源公开 |
 
 ---

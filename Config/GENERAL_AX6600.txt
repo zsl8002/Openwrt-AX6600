@@ -1,3 +1,6 @@
+# LuCI 默认主题：Argon（上游包自带首次启动默认主题初始化）
+CONFIG_PACKAGE_luci-theme-argon=y
+
 #科学插件调整
 #CONFIG_PACKAGE_luci-app-homeproxy=y
 #增加插件
