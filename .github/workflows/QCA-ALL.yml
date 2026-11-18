@@ -3,6 +3,10 @@ name: QCA-ALL
 
 #CI计划
 on:
+  # Daily QCA PURE/PLUS builds at 06:00 China time (22:00 UTC).
+  # Run directly; do not depend on the destructive Auto-Clean workflow.
+  schedule:
+    - cron: '0 22 * * *'
   push:
     paths:
       - '.github/workflows/QCA-ALL.yml'
