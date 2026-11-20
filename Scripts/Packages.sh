@@ -53,8 +53,42 @@ UPDATE_PACKAGE() {
 
 	# 处理克隆的仓库
 	if [[ "$PKG_SPECIAL" == "pkg" ]]; then
-		find "./$REPO_NAME"/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./ \;
-		rm -rf "./$REPO_NAME/"
+		# 只提取含 Makefile 的软件包目录，并先暂存到克隆目录之外。
+		# 上游仓库名可能与内部包目录同名（如 luci-theme-argon）；
+		# 直接复制到当前目录再删除克隆目录会把刚复制的包一起删除。
+		local PKG_STAGE
+		local FOUND_COUNT=0
+		local PKG_NAME_LOWER="${PKG_NAME,,}"
+		local CANDIDATE
+		local CANDIDATE_NAME
+		PKG_STAGE=$(mktemp -d "../.pkg-stage-${PKG_NAME}.XXXXXX")
+		while IFS= read -r CANDIDATE; do
+			CANDIDATE_NAME="${CANDIDATE##*/}"
+			CANDIDATE_NAME="${CANDIDATE_NAME,,}"
+			if [[ "$CANDIDATE_NAME" == *"$PKG_NAME_LOWER"* ]]; then
+				if ! cp -a "$CANDIDATE" "$PKG_STAGE/"; then
+					echo "::error::Failed to stage package directory: $CANDIDATE" >&2
+					rm -rf "$PKG_STAGE" "$REPO_NAME"
+					return 1
+				fi
+				FOUND_COUNT=$((FOUND_COUNT + 1))
+			fi
+		done < <(find "$REPO_NAME" -path "$REPO_NAME/.git" -prune -o -mindepth 2 -maxdepth 6 -type f -name Makefile -printf '%h\n')
+		if (( FOUND_COUNT == 0 )); then
+			echo "::error::Package directory matching '$PKG_NAME' not found in $PKG_REPO" >&2
+			rm -rf "$PKG_STAGE" "$REPO_NAME"
+			return 1
+		fi
+		rm -rf "$REPO_NAME"
+		for CANDIDATE in "$PKG_STAGE"/*; do
+			[[ -d "$CANDIDATE" ]] || continue
+			CANDIDATE_NAME="./$(basename "$CANDIDATE")"
+			if [[ -e "$CANDIDATE_NAME" ]]; then
+				rm -rf "$CANDIDATE_NAME"
+			fi
+			mv "$CANDIDATE" "$CANDIDATE_NAME"
+		done
+		rmdir "$PKG_STAGE"
 	elif [[ "$PKG_SPECIAL" == "name" ]]; then
 		mv -f "$REPO_NAME" "$PKG_NAME"
 	fi
