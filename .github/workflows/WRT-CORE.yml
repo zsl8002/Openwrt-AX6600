@@ -555,7 +555,7 @@ jobs:
       actions: write
       contents: read
     needs: core
-    if: inputs.WRT_TEST != 'true' && needs.core.result == 'success'
+    if: inputs.WRT_TEST != true && needs.core.result == 'success'
     runs-on: ubuntu-latest
     concurrency:
       group: wrt-cache-rollover-${{github.ref}}-${{needs.core.outputs.cache_prefix}}
