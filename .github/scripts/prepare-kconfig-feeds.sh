@@ -21,7 +21,11 @@ if ! grep -q '^CONFIG_PACKAGE_fwknopd=y' .config &&
 fi
 
 if ! grep -q '^CONFIG_PACKAGE_squeezelite-custom=y' .config; then
-  rm -f package/feeds/*/squeezelite-custom
+  # The pinned packages feed directory is named "squeezelite", while its
+  # generated Kconfig symbol/package name is "squeezelite-custom".
+  # Removing the actual unselected feed link prevents its recursive Kconfig
+  # dependency from being parsed, without touching the pinned feed source.
+  rm -f package/feeds/*/squeezelite package/feeds/*/squeezelite-custom
 fi
 
 echo "Removed only unselected feed links known to trigger recursive Kconfig dependencies."
